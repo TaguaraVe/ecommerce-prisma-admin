@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { AlertModal } from '@/components/modals/alert-Modal';
 
 const formSchema = z.object({
   name: z.string().min(3, 'Debe tener al menos 3 caracteres'),
@@ -46,33 +47,72 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   });
 
   const onSubmit = async (data: SettingsFormValues) => {
-    console.log(data);
-    // try {
-    //   setIsLoading(true);
-    //   const response = await fetch(`/api/stores/${params.storeId}`, {
-    //     method: 'GET',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //   });
-    //   if (!response.ok) {
-    //     throw new Error('Network response was not ok', response);
-    //   }
-    //   const data = await response.json();
-    //   router.refresh();
-    //   toast.success('Store updated.');
-    // } catch (error: any) {
-    //   toast.error('Something went wrong.');
-    // } finally {
-    //   setIsLoading(false);
-    // }
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/stores/${params.storeId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok', response);
+      }
+      const dataResponse = await response.json();
+      router.refresh();
+
+      toast.success('La Rienda se actualizo.');
+    } catch (error: any) {
+      toast.error('!Ups.. Algo salio mal :');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onDelete = async (data: SettingsFormValues) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/stores/${params.storeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok', response);
+      }
+      await response.json();
+      router.refresh();
+      router.push('/');
+      toast.success('La Tieda se elimino.');
+    } catch (error: any) {
+      toast.error('Asegurese de eliminar primero los productos y categorias');
+    } finally {
+      setIsLoading(false);
+      setOpen(false);
+    }
   };
 
   return (
     <>
+      <AlertModal
+        isOpen={open}
+        onConfirm={onDelete}
+        onClose={() => setOpen(false)}
+        loading={isLoading}
+      />
       <div className="flex items-center justify-between">
         <Heading title="Settings" description="Preferencias de la tienda" />
-        <Button variant="destructive" size="sm" onClick={() => {}}>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => {
+            setOpen(true);
+          }}
+        >
           <Trash className="h-4 w-4" />
         </Button>
       </div>
